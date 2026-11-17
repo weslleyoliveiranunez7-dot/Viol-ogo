@@ -3,9 +3,11 @@
 
 Curso interativo de violão para quem está começando do zero. Site estático (HTML, CSS e JavaScript puros): sem servidor, sem login e sem chaves. O progresso, o XP e a sequência de dias ficam salvos no `localStorage` do navegador.
 
-## O que já funciona (versão 0.1)
+## O que já funciona (versão 0.3)
 - Tela inicial com nível, barra de progresso, XP, sequência de dias e mapa de unidades
 - **Aula 1 completa**: boas-vindas, partes do violão (desenho SVG original), as seis cordas, exercício das cordas soltas e revisão com 3 perguntas
+- **Aulas 2 e 3**: numeração das cordas e primeiros sons, com metrônomo opcional (40–100 BPM)
+- **Unidade 2**: acordes Em, Am, C, G e D, cada um com diagrama, dedos numerados, cordas a evitar, passo a passo e conferência corda por corda
 - XP concedido uma única vez, medalhas, desbloqueio da Aula 2 e botão de reiniciar progresso
 - Tons de referência (Web Audio) tocados só quando você clica. **Não são gravações de violão.**
 - O site **não ouve** seu violão nem avalia o que você toca

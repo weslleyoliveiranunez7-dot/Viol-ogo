@@ -1,4 +1,4 @@
-/* ViolãoGO — v0.1 (Etapa 1: Aula 1 completa + trilha) */
+/* ViolãoGO — v0.3 (Etapa 3: Aulas 1–3 + acordes Em, Am, C, G, D) */
 'use strict';
 var KEY = 'violaogo:v1';
 var storageOk = true;
@@ -37,7 +37,7 @@ var UNIDADES = [
 ];
 var TODAS = [];
 UNIDADES.forEach(function (u) { u.aulas.forEach(function (a) { TODAS.push(a); }); });
-var DISPONIVEL = { a1: true }; // Aulas com conteúdo pronto nesta versão
+var DISPONIVEL = { a1: true, a2: true, a3: true, c1: true, c2: true, c3: true, c4: true, c5: true }; // Aulas com conteúdo pronto nesta versão
 
 // Desbloqueio: a primeira aula está sempre liberada; as demais só após concluir a anterior.
 function liberada(id) {
@@ -160,7 +160,7 @@ function telaPerfil() {
 /* ---------- Aula 1 (passo a passo) ---------- */
 var passo = 0, certas = {};
 var NP = 6;
-function abrirAula(id) { if (id !== 'a1' || !liberada(id)) return; passo = 0; certas = {}; telaPasso(); }
+function abrirAula(id) { if (!liberada(id)) return; if (id !== 'a1') { abrirGen(id); return; } passo = 0; certas = {}; telaPasso(); }
 
 function violaoSvg() {
   var cs = '', i;
@@ -239,6 +239,129 @@ function concluirAula() {
   }
   ir('aprender');
 }
+
+
+/* ---------- Aulas 2 e 3 (motor genérico de passos) ---------- */
+var gId = '', gp = 0, mt = null, chk = {}; // mt = temporizador do metrônomo
+var GL = {
+  a2: { steps: [
+    { h: '<h2>As seis cordas, com calma</h2><p>Lembra? A contagem começa na corda <b>mais fina</b>. Veja o braço do violão como se você olhasse para ele de frente, tocando:</p>' + cordasSvg() +
+      '<p>Da <b>mais grossa para a mais fina</b>, os nomes são: <b>Mi, Lá, Ré, Sol, Si, Mi</b>. Repita em voz alta algumas vezes.</p>' },
+    { h: '<h2>Ouça e compare</h2><p>Toque o botão de cada corda e perceba: quanto mais grossa, mais grave é o som.</p><ul class="cordas">' +
+      CORDAS.map(function (c) { return '<li><span class="n">' + c.n + '</span><span style="min-width:112px">' + c.nome + '</span><span class="fio" style="height:' + c.w + 'px"></span><button data-f="' + c.f + '" aria-label="Ouvir tom de referência da corda ' + c.n + '">🔊</button></li>'; }).join('') +
+      '</ul><p class="mut">São tons de referência gerados pelo site, não gravações de violão.</p>' },
+    { quiz: [
+      { q: 'Qual é a 4ª corda?', o: ['Ré (D)', 'Sol (G)', 'Lá (A)'], c: 0, ok: 'Isso! 1ª Mi, 2ª Si, 3ª Sol, 4ª Ré.', no: 'Conte da mais fina: 1ª Mi, 2ª Si, 3ª Sol, 4ª Ré.' },
+      { q: 'Qual é a nota da 6ª corda, a mais grossa?', o: ['Si (B)', 'Mi grave (E)', 'Lá (A)'], c: 1, ok: 'Certo! A 6ª corda é o Mi grave.', no: 'A mais grossa é o Mi grave (E).' },
+      { q: 'Qual corda é a Lá (A)?', o: ['5ª', '2ª', '3ª'], c: 0, ok: 'Exato! O Lá é a 5ª corda, a segunda mais grossa.', no: 'O Lá fica perto da mais grossa: é a 5ª corda.' }
+    ] } ] },
+  a3: { steps: [
+    { h: '<h2>Tocando uma corda</h2><p>Use o <b>polegar</b> ou os dedos da mão direita e puxe a corda de leve, perto da boca do violão. Deixe a corda soltar sozinha, sem forçar.</p><p><b>Dicas:</b> ombros soltos, respiração calma e a mão esquerda sem apertar nada. Se o som sair "abafado", sua mão esquerda provavelmente está encostando na corda.</p>' },
+    { h: '<h2>Corda por corda, no ritmo</h2><p>Toque <b>1, 2, 3, 4, 5, 6</b> e depois volte <b>6, 5, 4, 3, 2, 1</b>, uma corda a cada batida do metrônomo. Comece lento.</p>' +
+      '<div class="seq">' + [1, 2, 3, 4, 5, 6].map(function (n) { return '<span>' + n + '</span>'; }).join('') + '</div>' +
+      '<div class="card dest"><b>Metrônomo (opcional)</b><p class="mut">Batidas de referência geradas pelo site. Ele não ouve seu violão.</p>' +
+      '<label for="bpm">Velocidade: <b id="bpmv">60</b> BPM</label><input id="bpm" type="range" min="40" max="100" value="60" style="width:100%;height:36px">' +
+      '<div class="seq"><span id="pulso" aria-hidden="true">●</span></div><button class="btn am" id="mbtn">▶ Iniciar metrônomo</button></div>' +
+      '<p class="mut">Meta realista: 3 repetições sem pressa. Pode repetir quantas vezes quiser, sem perder nada.</p>' },
+    { ex: true, h: '<h2>Hora de praticar</h2><p>Faça a sequência de ida e volta com calma, no seu tempo. Quando terminar, marque abaixo.</p>' }
+  ] }
+};
+
+/* ---------- Unidade 2: acordes ---------- */
+// f = casa de cada corda (6ª→1ª): -1 = não tocar, 0 = solta. d = dedo (1 indicador, 2 médio, 3 anelar, 4 mínimo)
+var NOMEDEDO = ['', 'indicador (1)', 'médio (2)', 'anelar (3)', 'mínimo (4)'];
+var ACORDES = {
+  c1: { n: 'Em', ext: 'Mi menor', f: [0, 2, 2, 0, 0, 0], d: [0, 2, 3, 0, 0, 0], dica: 'Os dois dedos ficam lado a lado, na mesma casa (casa 2). É o acorde mais fácil para começar.' },
+  c2: { n: 'Am', ext: 'Lá menor', f: [-1, 0, 2, 2, 1, 0], d: [0, 0, 2, 3, 1, 0], dica: 'Parece o Em, só que os dedos sobem uma corda e o indicador entra na casa 1.' },
+  c3: { n: 'C', ext: 'Dó maior', f: [-1, 3, 2, 0, 1, 0], d: [0, 3, 2, 0, 1, 0], dica: 'Os dedos formam uma escada: indicador, médio e anelar, subindo para as cordas mais grossas.' },
+  c4: { n: 'G', ext: 'Sol maior', f: [3, 2, 0, 0, 0, 3], d: [2, 1, 0, 0, 0, 3], dica: 'Os dedos ficam bem separados: dois nas cordas graves e um na 1ª corda. Abra bem a mão.' },
+  c5: { n: 'D', ext: 'Ré maior', f: [-1, -1, 0, 2, 3, 2], d: [0, 0, 0, 1, 3, 2], dica: 'Os três dedos formam um triângulo pequeno. Só as 4 cordas mais finas soam.' }
+};
+function acordeSvg(a) {
+  var o = '<svg class="violao" viewBox="0 0 200 250" role="img" aria-label="Diagrama do acorde ' + a.n + '">', i, x;
+  for (i = 0; i < 6; i++) {
+    x = 30 + i * 28;
+    o += '<line x1="' + x + '" y1="50" x2="' + x + '" y2="210" stroke="#6b5416" stroke-width="2"/>' +
+      '<text x="' + x + '" y="232" text-anchor="middle" font-size="12" fill="#5b6b60">' + (6 - i) + 'ª</text>';
+    if (a.f[i] < 0) o += '<text x="' + x + '" y="38" text-anchor="middle" font-size="18" font-weight="800" fill="#b3402a">✕</text>';
+    else if (a.f[i] === 0) o += '<circle cx="' + x + '" cy="32" r="7" fill="none" stroke="#14532d" stroke-width="2.5"/>';
+    else o += '<circle cx="' + x + '" cy="' + (50 + (a.f[i] - .5) * 40) + '" r="13" fill="#1f8a4c"/><text x="' + x + '" y="' + (50 + (a.f[i] - .5) * 40 + 5) + '" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">' + a.d[i] + '</text>';
+  }
+  for (i = 0; i <= 4; i++) o += '<line x1="30" y1="' + (50 + i * 40) + '" x2="170" y2="' + (50 + i * 40) + '" stroke="' + (i ? '#9aa39d' : '#1b2a1f') + '" stroke-width="' + (i ? 2 : 6) + '"/>';
+  return o + '</svg>';
+}
+Object.keys(ACORDES).forEach(function (id) {
+  var a = ACORDES[id], jogar = [], evitar = [], dedos = [];
+  a.f.forEach(function (f, i) { var c = 6 - i; if (f < 0) evitar.push(c + 'ª'); else jogar.push(c + 'ª'); if (f > 0) dedos.push('<li>Dedo <b>' + NOMEDEDO[a.d[i]] + '</b>: ' + c + 'ª corda, casa ' + f + '.</li>'); });
+  var labels = a.f.map(function (f, i) { return f < 0 ? null : (6 - i) + 'ª corda' + (f ? ' (casa ' + f + ')' : ' (solta)') + ' soa limpa'; }).filter(Boolean);
+  GL[id] = { steps: [
+    { h: '<h2>Acorde ' + a.n + ' (' + a.ext + ')</h2><p>Acorde é um grupo de cordas tocadas juntas. Nas cifras, ele aparece como <b>' + a.n + '</b>.</p>' + acordeSvg(a) +
+      '<p><b>Como ler:</b> ○ = corda solta, ✕ = não tocar, números = dedos (1 indicador, 2 médio, 3 anelar, 4 mínimo). As linhas horizontais são os trastes.</p>' +
+      '<p><b>Toque:</b> ' + jogar.join(', ') + ' cordas.' + (evitar.length ? ' <b>Evite:</b> ' + evitar.join(', ') + '.' : '') + '</p>' },
+    { h: '<h2>Posicione os dedos</h2><ol>' + dedos.join('') + '</ol><p>' + a.dica + '</p>' +
+      '<p><b>Dicas:</b> aperte perto do traste, sem ficar em cima dele. Use a ponta do dedo, com o dedo arqueado, e deixe o polegar atrás do braço, sem apertar demais.</p>' },
+    { chk: labels, h: '<h2>Confira corda por corda</h2><p>Monte o acorde e toque uma corda por vez. Se alguma soar abafada ou "chiada", ajuste o dedo. Marque as que estiverem limpas. Pode repetir à vontade.</p>' }
+  ] };
+});
+function cordasSvg() {
+  var o = '<svg class="violao" viewBox="0 0 300 200" role="img" aria-label="Seis cordas, da 1ª mais fina, no alto, até a 6ª mais grossa, embaixo">';
+  CORDAS.forEach(function (c, i) {
+    var y = 25 + i * 30;
+    o += '<line x1="70" y1="' + y + '" x2="290" y2="' + y + '" stroke="#6b5416" stroke-width="' + (1 + i * .8) + '"/><text x="8" y="' + (y + 5) + '" font-size="14" font-weight="700" fill="#14532d">' + c.n + 'ª  ' + c.nome.split(' ')[0] + '</text>';
+  });
+  return o + '</svg>';
+}
+function pararMetro() { if (mt) { clearInterval(mt); mt = null; } }
+function abrirGen(id) { gId = id; gp = 0; certas = {}; chk = {}; telaGen(); }
+function telaGen() {
+  pararMetro();
+  var L = GL[gId], total = L.steps.length + 1, st = L.steps[gp], ultimo = gp === total - 1, bloq = false;
+  var h = '<span class="passo">Passo ' + (gp + 1) + ' de ' + total + '</span><div class="barra"><i style="width:' + Math.round((gp + 1) / total * 100) + '%"></i></div><div class="card">';
+  if (ultimo) {
+    h += '<div class="festa" aria-hidden="true">🎉</div><h2 style="text-align:center">Missão concluída!</h2><p style="text-align:center">' +
+      (S.done[gId] ? 'Você já tinha concluído esta aula — o XP é dado uma única vez.' : 'Você ganhou <b>20 XP</b> e desbloqueou a próxima aula.') + '</p>';
+  } else if (st.quiz) {
+    h += '<h2>Revisão rápida</h2>' + st.quiz.map(function (p, i) {
+      return '<div><b>' + (i + 1) + '. ' + p.q + '</b>' + p.o.map(function (o, j) { return '<button class="opt' + (certas[i] && j === p.c ? ' ok' : '') + '" data-q="' + i + '" data-o="' + j + '">' + o + '</button>'; }).join('') + '<div class="fb" id="fb' + i + '" aria-live="polite">' + (certas[i] ? '✅ ' + p.ok : '') + '</div></div>';
+    }).join('');
+    bloq = Object.keys(certas).length < st.quiz.length;
+  } else {
+    h += st.h;
+    if (st.chk) { h += st.chk.map(function (t, i) { return '<button class="opt' + (chk[i] ? ' ok' : '') + '" data-k="' + i + '" aria-pressed="' + !!chk[i] + '">' + (chk[i] ? '✅ ' : '⬜ ') + t + '</button>'; }).join(''); bloq = Object.keys(chk).length < st.chk.length; }
+    if (st.ex) { var f = !!S.ex[gId]; h += '<button class="btn am" id="exb">' + (f ? '✅ Exercício concluído' : 'Marcar exercício como concluído') + '</button>'; bloq = !f; }
+  }
+  h += '</div><div class="linha">' + (gp > 0 ? '<button class="btn sec" id="vb">Voltar</button>' : '<button class="btn sec" id="sai">Sair</button>') +
+    '<button class="btn" id="cont"' + (bloq ? ' disabled' : '') + '>' + (ultimo ? 'Concluir' : 'Continuar') + '</button></div>';
+  app.innerHTML = h; window.scrollTo(0, 0); app.focus();
+  var el = function (i) { return document.getElementById(i); };
+  if (el('vb')) el('vb').onclick = function () { gp--; telaGen(); };
+  if (el('sai')) el('sai').onclick = function () { ir('aprender'); };
+  el('cont').onclick = function () {
+    if (!ultimo) { gp++; telaGen(); return; }
+    if (!S.done[gId]) { S.done[gId] = true; S.xp += 20; if (gId === 'c1' && S.badges.indexOf('Primeiro acorde') < 0) S.badges.push('Primeiro acorde'); registrarDia(); salvar(); } // XP só na 1ª conclusão
+    ir('aprender');
+  };
+  document.querySelectorAll('.cordas button').forEach(function (b) { b.onclick = function () { tom(parseFloat(b.dataset.f)); }; });
+  if (el('exb')) el('exb').onclick = function () { S.ex[gId] = true; salvar(); telaGen(); };
+  document.querySelectorAll('.opt[data-k]').forEach(function (b) { b.onclick = function () { var k = +b.dataset.k; if (chk[k]) delete chk[k]; else chk[k] = true; telaGen(); }; });
+  document.querySelectorAll('.opt[data-q]').forEach(function (b) {
+    b.onclick = function () {
+      var i = +b.dataset.q, j = +b.dataset.o, p = st.quiz[i];
+      if (certas[i]) return;
+      if (j === p.c) { certas[i] = true; telaGen(); } else { b.classList.add('no'); el('fb' + i).textContent = '💡 ' + p.no; }
+    };
+  });
+  if (el('mbtn')) { // Metrônomo: iniciar/parar e ajustar BPM
+    var bpm = 60, run = function () {
+      pararMetro();
+      mt = setInterval(function () { tom(1000); var p = el('pulso'); if (p) { p.style.background = '#ffc940'; setTimeout(function () { p.style.background = ''; }, 120); } }, 60000 / bpm);
+    };
+    el('bpm').oninput = function () { bpm = +this.value; el('bpmv').textContent = bpm; if (mt) run(); };
+    el('mbtn').onclick = function () { if (mt) { pararMetro(); this.textContent = '▶ Iniciar metrônomo'; } else { run(); this.textContent = '⏹ Parar metrônomo'; } };
+  }
+}
+// Para o metrônomo ao trocar de aba
+document.querySelectorAll('.abas button').forEach(function (b) { b.addEventListener('click', pararMetro); });
 
 avisar();
 ir('inicio');
