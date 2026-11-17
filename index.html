@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1f8a4c">
+<title>ViolãoGO — Sua primeira música começa aqui</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="aviso" class="aviso" role="alert" hidden></div>
+<header class="topo">
+  <h1>Violão<span>GO</span></h1>
+  <div class="placar" aria-label="Seu placar">
+    <span class="xp" id="topXp">⭐ 0 XP</span>
+    <span class="streak" id="topStreak">🔥 0</span>
+  </div>
+</header>
+<main id="app" tabindex="-1"></main>
+<nav class="abas" aria-label="Navegação principal">
+  <button data-tab="inicio">Início</button>
+  <button data-tab="aprender">Aprender</button>
+  <button data-tab="musicas">Músicas</button>
+  <button data-tab="perfil">Perfil</button>
+</nav>
+<script src="script.js"></script>
+</body>
+</html>
