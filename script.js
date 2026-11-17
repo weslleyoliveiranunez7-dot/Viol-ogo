@@ -1,4 +1,4 @@
-/* ViolãoGO — v0.3 (Etapa 3: Aulas 1–3 + acordes Em, Am, C, G, D) */
+/* ViolãoGO — v0.5 (Aulas 1–3, acordes, troca de acordes + Unidade 4: ritmos e batidas) */
 'use strict';
 var KEY = 'violaogo:v1';
 var storageOk = true;
@@ -37,7 +37,7 @@ var UNIDADES = [
 ];
 var TODAS = [];
 UNIDADES.forEach(function (u) { u.aulas.forEach(function (a) { TODAS.push(a); }); });
-var DISPONIVEL = { a1: true, a2: true, a3: true, c1: true, c2: true, c3: true, c4: true, c5: true }; // Aulas com conteúdo pronto nesta versão
+var DISPONIVEL = { a1: true, a2: true, a3: true, c1: true, c2: true, c3: true, c4: true, c5: true, t1: true, t2: true, r1: true, r2: true }; // Aulas com conteúdo pronto nesta versão
 
 // Desbloqueio: a primeira aula está sempre liberada; as demais só após concluir a anterior.
 function liberada(id) {
@@ -98,7 +98,7 @@ function tom(f) { // Tom de referência (Web Audio) — NÃO é gravação de vi
 /* ---------- Abas ---------- */
 var aba = 'inicio';
 function ir(t) {
-  aba = t;
+  aba = t; pararMetro();
   document.querySelectorAll('.abas button').forEach(function (b) {
     if (b.dataset.tab === t) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
   });
@@ -143,7 +143,7 @@ function telaMusicas() {
     '<p class="mut">Quando ela chegar, cada música mostrará os acordes, o ritmo sugerido e um campo para o link oficial de áudio — sem letras ou cifras completas, só a sequência de acordes. Nenhum link é inventado: onde não houver link verificado, ficará marcado "adicionar depois".</p></div>';
 }
 function telaPerfil() {
-  var B = [['Primeiro passo', 'Conclua a Aula 1'], ['Seis cordas', 'Marque o exercício das cordas soltas'], ['Primeiro acorde', 'Conclua o acorde Em']];
+  var B = [['Primeiro passo', 'Conclua a Aula 1'], ['Seis cordas', 'Marque o exercício das cordas soltas'], ['Primeiro acorde', 'Conclua o acorde Em'], ['Primeira troca', 'Conclua Em ⇄ Am'], ['No ritmo', 'Conclua Para baixo e para cima']];
   app.innerHTML = '<h2>Perfil</h2><div class="card"><b>Iniciante — Nível 1</b><p>⭐ ' + S.xp + ' XP · 🔥 ' + streakAtual() + ' dia(s) · ' + pct() + '% do curso</p></div>' +
     '<h3>Medalhas</h3><div>' + B.map(function (b) {
       var ok = S.badges.indexOf(b[0]) >= 0;
@@ -303,6 +303,64 @@ Object.keys(ACORDES).forEach(function (id) {
     { chk: labels, h: '<h2>Confira corda por corda</h2><p>Monte o acorde e toque uma corda por vez. Se alguma soar abafada ou "chiada", ajuste o dedo. Marque as que estiverem limpas. Pode repetir à vontade.</p>' }
   ] };
 });
+
+/* ---------- Unidade 3: troca de acordes ---------- */
+// Cada "treino" usa os ids dos acordes (c1=Em, c2=Am, c3=C, c4=G, c5=D). Sem penalidade: repetir quantas vezes quiser.
+function doisAcordes(i1, i2) { return '<div style="display:flex;gap:8px"><div style="flex:1;text-align:center"><b>' + ACORDES[i1].n + '</b>' + acordeSvg(ACORDES[i1]) + '</div><div style="flex:1;text-align:center"><b>' + ACORDES[i2].n + '</b>' + acordeSvg(ACORDES[i2]) + '</div></div>'; }
+GL.t1 = { steps: [
+  { h: '<h2>Trocar de acorde, devagar</h2><p>Tocar um acorde é uma coisa; <b>trocar</b> de um para outro é outra habilidade — e ela se treina com paciência. É normal ficar lento e errar no começo.</p>' + doisAcordes('c1', 'c2') +
+    '<p><b>O truque:</b> no Em, os dedos <b>2</b> e <b>3</b> estão nas cordas 5ª e 4ª. No Am, eles ficam <b>juntos</b> uma corda mais perto das finas (4ª e 3ª), e o dedo <b>1</b> entra na 2ª corda, casa 1. Pense neles como <b>um bloco</b> que desliza.</p>' },
+  { h: '<h2>Como treinar</h2><ol><li>Monte o <b>Em</b> e toque as cordas uma a uma.</li><li>Tire os dedos <b>juntos</b>, sem pressa, e monte o <b>Am</b>.</li><li>Olhe para a mão, não para o relógio. Primeiro acerte; depois, acelere.</li></ol>' +
+    '<p><b>Meta realista:</b> 5 trocas completas com calma já é uma ótima conquista. Errou? Sem problema: respire e tente de novo — aqui nada é perdido.</p>' },
+  { treino: [{ nome: 'Em ⇄ Am', ids: ['c1', 'c2'] }], h: '<h2>Treino guiado</h2><p>Cada acorde dura <b>4 batidas</b>. Nas batidas 1, 2 e 3, segure e toque o acorde. Na batida 4, <b>mude os dedos</b> para o próximo. Se não der tempo, baixe a velocidade — ou pare e recomece.</p>' },
+  { chk: ['Fiz 5 trocas Em → Am e Am → Em, bem devagar', 'Consegui trocar sem olhar o relógio, só olhando a mão', 'Quando errei, parei, respirei e tentei de novo'], h: '<h2>Suas metas</h2><p>Marque o que você já conseguiu. Pode voltar ao treino quantas vezes quiser antes de marcar.</p>' }
+] };
+GL.t2 = { steps: [
+  { h: '<h2>Mais trocas</h2><p>Agora vamos trocar entre os outros acordes, do mais fácil para o mais difícil. A dica é achar o que <b>não precisa mudar</b>.</p>' + doisAcordes('c2', 'c3') +
+    '<p><b>Am ⇄ C:</b> os dedos <b>1</b> e <b>2</b> ficam parados (2ª corda casa 1 e 4ª corda casa 2). Só o dedo <b>3</b> muda: sai da 3ª corda, casa 2, e vai para a 5ª corda, casa 3.</p>' +
+    '<p><b>G ⇄ D:</b> o dedo <b>3</b> só muda de corda, na mesma casa 3 (da 1ª corda no G para a 2ª no D).</p><p class="mut">C ⇄ G é a troca mais difícil dessa lista: é um desafio opcional, sem pressa.</p>' },
+  { treino: [{ nome: 'Am ⇄ C (dedos 1 e 2 ficam parados)', ids: ['c2', 'c3'] }, { nome: 'G ⇄ D', ids: ['c4', 'c5'] }, { nome: 'Em → Am → C', ids: ['c1', 'c2', 'c3'] }, { nome: 'C ⇄ G (desafio)', ids: ['c3', 'c4'] }],
+    h: '<h2>Treino guiado</h2><p>Escolha uma troca. Cada acorde dura <b>4 batidas</b>: segure nas batidas 1 a 3 e mude os dedos na 4. Comece em 40–50 BPM e só aumente quando estiver fácil.</p>' },
+  { chk: ['Fiz 5 trocas Am ⇄ C com calma', 'Fiz 5 trocas G ⇄ D com calma', 'Pratiquei devagar e aceitei que acertar leva tempo'], h: '<h2>Suas metas</h2><p>Marque o que você já conseguiu. O desafio C ⇄ G fica para quando você quiser.</p>' }
+] };
+
+/* ---------- Unidade 4: ritmos e batidas ---------- */
+// Grade de 8 posições por compasso: 1 e 2 e 3 e 4 e. "↓" = para baixo, "↑" = para cima, "" = a mão passa sem tocar.
+var NOMEB = ['1', 'e', '2', 'e', '3', 'e', '4', 'e'];
+function gradeBatida(cel, at) {
+  var desc = cel.map(function (c, i) { return NOMEB[i] + ': ' + (c === '↓' ? 'para baixo' : c === '↑' ? 'para cima' : 'sem tocar'); }).join('; ');
+  return '<div role="img" aria-label="Batida. ' + desc + '" style="display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin:8px 0">' + cel.map(function (c, i) {
+    var on = i === at;
+    return '<div style="border:3px solid ' + (on ? '#1b2a1f' : 'transparent') + ';background:' + (on ? '#ffc940' : '#fff') + ';border-radius:10px;padding:6px 0;text-align:center"><div style="font-size:.8rem;font-weight:700">' + NOMEB[i] + '</div><div style="font-size:1.4rem;font-weight:800">' + (c || '·') + '</div></div>';
+  }).join('') + '</div>';
+}
+function metroHtml() { // Mesmo metrônomo opcional da Aula 3 (ligado pelo bloco 'mbtn' em telaGen)
+  return '<div class="card dest"><b>Metrônomo (opcional)</b><p class="mut">Batidas de referência geradas pelo site. Ele não ouve seu violão.</p>' +
+    '<label for="bpm">Velocidade: <b id="bpmv">60</b> BPM</label><input id="bpm" type="range" min="40" max="100" value="60" style="width:100%;height:36px">' +
+    '<div class="seq"><span id="pulso" aria-hidden="true">●</span></div><button class="btn am" id="mbtn">▶ Iniciar metrônomo</button></div>';
+}
+GL.r1 = { steps: [
+  { h: '<h2>Pulsação: o coração da música</h2><p><b>Pulsação</b> é a batida constante da música — aquela em que você bate o pé sem pensar. Ela não corre nem para: é sempre igual, como um relógio ou os passos de uma caminhada.</p><p>Antes de ritmos complicados, o primeiro objetivo é <b>sentir essa batida</b>. Tocar no tempo vale mais do que tocar rápido.</p>' },
+  { h: '<h2>Contagem: 1, 2, 3, 4</h2><p>Para não se perder, a gente <b>conta em voz alta</b> as batidas, em grupos de quatro. Cada grupo é um <b>compasso</b>.</p><div class="seq" aria-label="Contagem: 1, 2, 3, 4">' + [1, 2, 3, 4].map(function (n) { return '<span>' + n + '</span>'; }).join('') + '</div>' +
+    '<p>Ligue o metrônomo, bata palmas a cada batida e conte <b>1, 2, 3, 4, 1, 2, 3, 4…</b> Comece em 50–60 BPM.</p>' + metroHtml() +
+    '<p class="mut">Praticar devagar não é perder tempo: é o que deixa a mão pronta para acelerar depois, aos poucos.</p>' },
+  { quiz: [
+    { q: 'O que é a pulsação?', o: ['A batida constante da música', 'A velocidade máxima que você consegue tocar', 'Uma corda do violão'], c: 0, ok: 'Isso! É a batida regular que organiza tudo.', no: 'Quase. Pulsação é a batida constante, como o tique-taque de um relógio.' },
+    { q: 'Em um compasso de 4 tempos, como contamos?', o: ['1, 2, 3, 4', '1, 1, 1, 1', '4, 3, 2, 1, 0'], c: 0, ok: 'Certo! Contamos 1, 2, 3, 4 e recomeçamos.', no: 'Tente de novo: são quatro batidas, 1, 2, 3, 4.' },
+    { q: 'Ao aprender um ritmo novo, qual é o melhor andamento?', o: ['O mais rápido possível', 'Bem devagar, aumentando aos poucos', 'Tanto faz'], c: 1, ok: 'Exato! Devagar primeiro, velocidade depois.', no: 'Pense em acertar antes de acelerar: o melhor é começar bem devagar.' }
+  ] },
+  { ex: true, h: '<h2>Hora de praticar</h2><p>Sem o violão, bata palmas no tempo e conte <b>1, 2, 3, 4</b> por 8 compassos, no seu ritmo. Se perder o tempo, respire e recomece: nada é perdido.</p>' }
+] };
+GL.r2 = { steps: [
+  { h: '<h2>Para baixo e para cima</h2><p>Na batida, a mão direita balança como um pêndulo: <b>↓ para baixo</b> (da corda grossa para a fina) e <b>↑ para cima</b> (da fina para a grossa).</p><p>Para encaixar o ↑, contamos o meio tempo como <b>"e"</b>: <b>1 e 2 e 3 e 4 e</b>. Os números caem no ↓ e os "e" no ↑.</p>' + gradeBatida(['↓', '↑', '↓', '↑', '↓', '↑', '↓', '↑'], -1) },
+  { h: '<h2>Como praticar</h2><ul><li>Use um acorde que você já sabe, como o <b>Em</b>, com a mão esquerda parada.</li><li>Deixe o pulso solto e a mão <b>sempre balançando</b>, mesmo quando não toca as cordas (o "·" na grade).</li><li>Comece em 40–50 BPM e só aumente um pouco quando estiver fácil.</li></ul><p class="mut">Se o som sair duro ou cansar a mão, baixe a velocidade e relaxe o pulso.</p>' },
+  { batida: [
+    { nome: '1. Só para baixo (↓ nos 4 tempos)', cel: ['↓', '', '↓', '', '↓', '', '↓', ''] },
+    { nome: '2. Baixo e cima, sempre (↓↑)', cel: ['↓', '↑', '↓', '↑', '↓', '↑', '↓', '↑'] },
+    { nome: '3. Primeira batida de música', cel: ['↓', '', '↓', '↑', '', '↑', '↓', '↑'] }
+  ], h: '<h2>Treino de batida</h2><p>Escolha uma batida e acompanhe a grade. Comece pela 1, depois a 2 e, quando se sentir à vontade, a 3. Na 3, a mão continua balançando nos espaços em branco.</p>' },
+  { chk: ['Fiz a batida 1 (só para baixo) por 4 compassos seguidos', 'Fiz a batida 2 (↓↑) sem parar a mão', 'Experimentei a batida 3, mesmo devagar'], h: '<h2>Suas metas</h2><p>Marque o que você já conseguiu. Pode voltar ao treino quantas vezes quiser; a batida 3 pode levar alguns dias, e tudo bem.</p>' }
+] };
 function cordasSvg() {
   var o = '<svg class="violao" viewBox="0 0 300 200" role="img" aria-label="Seis cordas, da 1ª mais fina, no alto, até a 6ª mais grossa, embaixo">';
   CORDAS.forEach(function (c, i) {
@@ -312,7 +370,8 @@ function cordasSvg() {
   return o + '</svg>';
 }
 function pararMetro() { if (mt) { clearInterval(mt); mt = null; } }
-function abrirGen(id) { gId = id; gp = 0; certas = {}; chk = {}; telaGen(); }
+var trSel = 0; // sequência escolhida no treino de troca
+function abrirGen(id) { gId = id; gp = 0; certas = {}; chk = {}; trSel = 0; telaGen(); }
 function telaGen() {
   pararMetro();
   var L = GL[gId], total = L.steps.length + 1, st = L.steps[gp], ultimo = gp === total - 1, bloq = false;
@@ -328,6 +387,18 @@ function telaGen() {
   } else {
     h += st.h;
     if (st.chk) { h += st.chk.map(function (t, i) { return '<button class="opt' + (chk[i] ? ' ok' : '') + '" data-k="' + i + '" aria-pressed="' + !!chk[i] + '">' + (chk[i] ? '✅ ' : '⬜ ') + t + '</button>'; }).join(''); bloq = Object.keys(chk).length < st.chk.length; }
+    if (st.batida) { // Treino de batida: 8 posições (1 e 2 e 3 e 4 e); o site só dá o tempo, não ouve o violão
+      h += '<div role="group" aria-label="Escolha a batida">' + st.batida.map(function (t, i) { return '<button class="opt' + (i === trSel ? ' ok' : '') + '" data-s="' + i + '" aria-pressed="' + (i === trSel) + '">' + (i === trSel ? '✅ ' : '⬜ ') + t.nome + '</button>'; }).join('') + '</div>' +
+        '<label for="bbpm">Velocidade: <b id="bbpmv">50</b> BPM (comece bem lento)</label><input id="bbpm" type="range" min="40" max="90" value="50" style="width:100%;height:36px">' +
+        '<div id="bv"></div><button class="btn am" id="bbtn">▶ Iniciar treino</button>' +
+        '<p class="mut">O som toca só nos tempos 1, 2, 3 e 4. O site não ouve seu violão: quem avalia é você. Pode parar e repetir quando quiser.</p>';
+    }
+    if (st.treino) { // Treino de troca: batidas de referência + acorde da vez (o site não ouve o violão)
+      h += '<div role="group" aria-label="Escolha a troca">' + st.treino.map(function (t, i) { return '<button class="opt' + (i === trSel ? ' ok' : '') + '" data-s="' + i + '" aria-pressed="' + (i === trSel) + '">' + (i === trSel ? '✅ ' : '⬜ ') + t.nome + '</button>'; }).join('') + '</div>' +
+        '<label for="tbpm">Velocidade: <b id="tbpmv">50</b> BPM (comece bem lento)</label><input id="tbpm" type="range" min="30" max="80" value="50" style="width:100%;height:36px">' +
+        '<div id="trv" aria-live="off"></div><button class="btn am" id="tbtn">▶ Iniciar treino</button>' +
+        '<p class="mut">As batidas são geradas pelo site. Ele não ouve seu violão: quem avalia a troca é você. Pode parar e repetir quando quiser.</p>';
+    }
     if (st.ex) { var f = !!S.ex[gId]; h += '<button class="btn am" id="exb">' + (f ? '✅ Exercício concluído' : 'Marcar exercício como concluído') + '</button>'; bloq = !f; }
   }
   h += '</div><div class="linha">' + (gp > 0 ? '<button class="btn sec" id="vb">Voltar</button>' : '<button class="btn sec" id="sai">Sair</button>') +
@@ -338,7 +409,7 @@ function telaGen() {
   if (el('sai')) el('sai').onclick = function () { ir('aprender'); };
   el('cont').onclick = function () {
     if (!ultimo) { gp++; telaGen(); return; }
-    if (!S.done[gId]) { S.done[gId] = true; S.xp += 20; if (gId === 'c1' && S.badges.indexOf('Primeiro acorde') < 0) S.badges.push('Primeiro acorde'); registrarDia(); salvar(); } // XP só na 1ª conclusão
+    if (!S.done[gId]) { S.done[gId] = true; S.xp += 20; if (gId === 'c1' && S.badges.indexOf('Primeiro acorde') < 0) S.badges.push('Primeiro acorde'); if (gId === 't1' && S.badges.indexOf('Primeira troca') < 0) S.badges.push('Primeira troca'); if (gId === 'r2' && S.badges.indexOf('No ritmo') < 0) S.badges.push('No ritmo'); registrarDia(); salvar(); } // XP só na 1ª conclusão
     ir('aprender');
   };
   document.querySelectorAll('.cordas button').forEach(function (b) { b.onclick = function () { tom(parseFloat(b.dataset.f)); }; });
@@ -351,6 +422,35 @@ function telaGen() {
       if (j === p.c) { certas[i] = true; telaGen(); } else { b.classList.add('no'); el('fb' + i).textContent = '💡 ' + p.no; }
     };
   });
+  if (el('bbtn')) { // Treino de batida: cada passo do temporizador = meio tempo ("e")
+    var pat = st.batida[trSel].cel, ci = 0, bpm3 = 50;
+    var desenhaB = function (rodando, at) {
+      el('bv').innerHTML = '<div class="card dest" style="text-align:center"><span class="passo">' + (rodando ? 'Agora: ' + NOMEB[at] : 'Parado — aperte Iniciar') + '</span>' + gradeBatida(pat, rodando ? at : -1) + '</div>';
+    };
+    var andarB = function () { desenhaB(true, ci); if (ci % 2 === 0) tom(ci === 0 ? 1500 : 1000); ci = (ci + 1) % 8; };
+    desenhaB(false, 0);
+    el('bbpm').oninput = function () { bpm3 = +this.value; el('bbpmv').textContent = bpm3; if (mt) { pararMetro(); mt = setInterval(andarB, 30000 / bpm3); } };
+    el('bbtn').onclick = function () { if (mt) { pararMetro(); this.textContent = '▶ Iniciar treino'; desenhaB(false, 0); } else { ci = 0; andarB(); mt = setInterval(andarB, 30000 / bpm3); this.textContent = '⏹ Parar treino'; } };
+    document.querySelectorAll('.opt[data-s]').forEach(function (b) { b.onclick = function () { trSel = +b.dataset.s; telaGen(); }; });
+  }
+  if (el('tbtn')) { // Treino de troca: 4 batidas por acorde; na 4ª batida, mude os dedos para o próximo
+    var seq = st.treino[trSel].ids, ti = 0, bt = 0, bpm2 = 50;
+    var desenha = function (rodando) {
+      var a = ACORDES[seq[ti % seq.length]], nx = ACORDES[seq[(ti + 1) % seq.length]];
+      var pts = [0, 1, 2, 3].map(function (i) { return '<span style="' + (rodando && i === bt ? 'background:#ffc940;color:#1b2a1f' : 'background:#c9d4cc;color:#1b2a1f') + '">' + (i + 1) + '</span>'; }).join('');
+      el('trv').innerHTML = '<div class="card dest" style="text-align:center"><span class="passo">' + (rodando ? 'Batida ' + (bt + 1) + ' de 4' : 'Parado — aperte Iniciar') + '</span>' +
+        '<div style="font-size:2.4rem;font-weight:800">' + a.n + '</div>' + acordeSvg(a) + '<div class="seq">' + pts + '</div>' +
+        '<p><b>' + (rodando && bt === 3 ? '👉 Agora mude para ' + nx.n : 'Segure o ' + a.n + ' e toque devagar') + '</b></p></div>';
+    };
+    var andar = function () {
+      desenha(true); tom(bt === 0 ? 1500 : 1000);
+      bt++; if (bt === 4) { bt = 0; ti++; }
+    };
+    desenha(false);
+    el('tbpm').oninput = function () { bpm2 = +this.value; el('tbpmv').textContent = bpm2; if (mt) { pararMetro(); mt = setInterval(andar, 60000 / bpm2); } };
+    el('tbtn').onclick = function () { if (mt) { pararMetro(); this.textContent = '▶ Iniciar treino'; desenha(false); } else { ti = 0; bt = 0; andar(); mt = setInterval(andar, 60000 / bpm2); this.textContent = '⏹ Parar treino'; } };
+    document.querySelectorAll('.opt[data-s]').forEach(function (b) { b.onclick = function () { trSel = +b.dataset.s; telaGen(); }; });
+  }
   if (el('mbtn')) { // Metrônomo: iniciar/parar e ajustar BPM
     var bpm = 60, run = function () {
       pararMetro();
