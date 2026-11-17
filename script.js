@@ -111,11 +111,11 @@ document.querySelectorAll('.abas button').forEach(function (b) { b.onclick = fun
 function telaInicio() {
   var p = proxima();
   app.innerHTML =
-    '<h2>Olá! Bem-vindo ao ViolãoGO 👋</h2><p class="mut">Sua primeira música começa aqui.</p>' +
+    '<div class="mascote"><span class="cara">' + personagem('violao') + '</span><div><h2 style="margin:0">Bora tocar!</h2><p class="mut" style="margin:0">Sua primeira música começa aqui.</p></div></div>' +
     '<div class="card"><b>Iniciante — Nível 1</b>' +
     '<div class="barra" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct() + '" aria-label="Progresso do curso"><i style="width:' + pct() + '%"></i></div>' +
     '<span class="mut">' + pct() + '% do curso · ⭐ ' + S.xp + ' XP · 🔥 ' + streakAtual() + ' dia(s) seguidos</span>' +
-    '<p class="mut">A sequência de dias é calculada só no seu aparelho: conta os dias seguidos em que você concluiu uma aula.</p></div>' +
+    '</div>' +
     (p ? '<div class="card dest"><span class="passo">Próximo passo</span><h3 style="margin-top:.2em">' + esc(p.t) + '</h3>' +
       '<button class="btn" id="go">' + (S.done.a1 || p.id !== 'a1' ? 'Continuar aprendendo' : 'Começar') + '</button></div>'
       : '<div class="card dest"><h3>Você concluiu tudo que existe por aqui! 🎉</h3></div>') +
@@ -124,15 +124,24 @@ function telaInicio() {
   ligarAulas();
 }
 function telaAprender() { app.innerHTML = '<h2>Aprender</h2>' + mapa(); ligarAulas(); }
+function personagem(t) {
+  var o = '<svg viewBox="0 0 120 120" aria-hidden="true" fill="#fff" stroke="#111" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">';
+  if (t === 'violao') o += '<path d="M30 118q0-42 22-48 22 6 22 48z" fill="#111"/><circle cx="52" cy="38" r="17"/><path d="M35 36a17 17 0 0 1 34 0z" fill="#111"/><circle cx="46" cy="42" r="2" fill="#111" stroke="none"/><circle cx="58" cy="42" r="2" fill="#111" stroke="none"/><path d="M46 49q6 5 12 0"/><ellipse cx="78" cy="92" rx="17" ry="14"/><ellipse cx="92" cy="80" rx="12" ry="10"/><circle cx="82" cy="90" r="4" fill="#111"/><path d="M98 76l16-34" stroke-width="5"/><path d="M110 38l8-4 3 8-8 4z" fill="#111"/>';
+  else if (t === 'nota') o += '<ellipse cx="44" cy="92" rx="22" ry="18" fill="#111"/><path d="M64 88V22l34 12v18L74 44" stroke-width="6" fill="none"/><circle cx="36" cy="88" r="3" fill="#fff" stroke="none"/><circle cx="50" cy="88" r="3" fill="#fff" stroke="none"/><path d="M36 98q8 6 16 0" stroke="#fff"/>';
+  else o += '<path d="M60 12l14 30 33 4-24 23 6 33-29-16-29 16 6-33-24-23 33-4z" fill="#fff"/><circle cx="50" cy="58" r="3" fill="#111" stroke="none"/><circle cx="70" cy="58" r="3" fill="#111" stroke="none"/><path d="M50 70q10 9 20 0"/><path d="M14 20l-8-4M106 18l8-6M60 112v-8" />';
+  return o + '</svg>';
+}
 function mapa() {
+  var prox = proxima(), k = 0, ic = ['♪', '♫', '♩', '♬', '★', '♭'];
   return UNIDADES.map(function (u, i) {
     var lib = liberada(u.aulas[0].id);
-    return '<div class="unid' + (lib ? '' : ' bloq') + '"><b>Unidade ' + (i + 1) + ' — ' + esc(u.t) + '</b></div>' +
+    return '<div class="ban' + (lib ? '' : ' bloq') + '"><span class="pers">' + personagem(i % 2 ? 'nota' : 'violao') + '</span><div><small>Unidade ' + (i + 1) + '</small><b>' + esc(u.t) + '</b></div></div><div class="trilha">' +
       u.aulas.map(function (a) {
-        var ok = !!S.done[a.id], l = liberada(a.id), pronta = !!DISPONIVEL[a.id];
+        var ok = !!S.done[a.id], l = liberada(a.id), pronta = !!DISPONIVEL[a.id], at = prox && prox.id === a.id;
         var est = ok ? '✅ Concluída' : !l ? '🔒 Bloqueada' : pronta ? '▶ Começar' : '🕒 Em breve';
-        return '<button class="aula" data-aula="' + a.id + '"' + (l && pronta ? '' : ' disabled') + '><span><b>' + esc(a.t) + '</b></span><span class="est">' + est + '</span></button>';
-      }).join('');
+        var dx = Math.round(Math.sin(k++ * 1.1) * 52);
+        return '<button class="aula no' + (ok ? ' feita' : '') + (at ? ' atual' : '') + '" style="transform:translateX(' + dx + 'px)" data-aula="' + a.id + '"' + (l && pronta ? '' : ' disabled') + '><span class="bola">' + (ok ? '✓' : !l ? '🔒' : ic[k % ic.length]) + '</span><span class="rot">' + esc(a.t) + '</span><span class="est">' + est + '</span></button>';
+      }).join('') + '</div>';
   }).join('');
 }
 function ligarAulas() {
@@ -205,7 +214,7 @@ function telaPasso() {
     bloqueia = Object.keys(certas).length < PERGUNTAS.length;
   } else {
     var jaTinha = !!S.done.a1;
-    h += '<div class="festa" aria-hidden="true">🎉</div><h2 style="text-align:center">Missão concluída!</h2>' +
+    h += '<div class="festa">' + personagem('estrela') + '</div><h2 style="text-align:center">Missão concluída!</h2>' +
       '<p style="text-align:center">' + (jaTinha ? 'Você já tinha concluído esta aula — o XP é dado uma única vez.' : 'Você ganhou <b>20 XP</b> e desbloqueou a Aula 2.') + '</p>';
   }
   h += '</div><div class="linha">' + (passo > 0 ? '<button class="btn sec" id="vb">Voltar</button>' : '<button class="btn sec" id="sai">Sair</button>') +
@@ -377,7 +386,7 @@ function telaGen() {
   var L = GL[gId], total = L.steps.length + 1, st = L.steps[gp], ultimo = gp === total - 1, bloq = false;
   var h = '<span class="passo">Passo ' + (gp + 1) + ' de ' + total + '</span><div class="barra"><i style="width:' + Math.round((gp + 1) / total * 100) + '%"></i></div><div class="card">';
   if (ultimo) {
-    h += '<div class="festa" aria-hidden="true">🎉</div><h2 style="text-align:center">Missão concluída!</h2><p style="text-align:center">' +
+    h += '<div class="festa">' + personagem('estrela') + '</div><h2 style="text-align:center">Missão concluída!</h2><p style="text-align:center">' +
       (S.done[gId] ? 'Você já tinha concluído esta aula — o XP é dado uma única vez.' : 'Você ganhou <b>20 XP</b> e desbloqueou a próxima aula.') + '</p>';
   } else if (st.quiz) {
     h += '<h2>Revisão rápida</h2>' + st.quiz.map(function (p, i) {
